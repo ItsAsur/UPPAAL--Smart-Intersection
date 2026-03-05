@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+broadcast chan NS_Start, NS_Pause, NS_Stop, EW_Start, EW_Pause, EW_Stop, NS_startRoad, EW_startRoad, NS_pauseRoad, EW_pauseRoad, pedOnNS, pedOnEW, emergencyOnNS, emergencyOnEW;
+
+int NS_queue = 0;
+int EW_queue = 0;
+
+int NS_pedQueue = 0;
+int EW_pedQueue = 0;
+
+int carsInIntersection = 0;
+int pedsInIntersection = 0;
+
+bool emergencyOnNS_bool = false;
+bool emergencyOnEW_bool = false;
+
+bool NS_RoadStarted = false;
+bool EW_RoadStarted = false;</declaration>
+	<template>
+		<name x="5" y="5">TRAFFIC_AND_PEDESTRIAN_LIGHT</name>
+		<parameter>broadcast chan &amp;start, broadcast chan &amp;startRoad, broadcast chan &amp;pause, broadcast chan &amp;pauseRoad, broadcast chan &amp;stop, bool &amp;roadStart</parameter>
+		<declaration>// Place local declarations here.
+clock x;</declaration>
+		<location id="id0" x="0" y="-93">
+			<name x="-10" y="-127">red</name>
+		</location>
+		<location id="id1" x="0" y="93">
+			<name x="-17" y="110">green</name>
+		</location>
+		<location id="id2" x="-527" y="-93">
+			<name x="-595" y="-102">yellow</name>
+		</location>
+		<location id="id3" x="0" y="0">
+			<committed/>
+		</location>
+		<location id="id4" x="-255" y="0">
+			<committed/>
+		</location>
+		<init ref="id0"/>
+		<transition id="id5">
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-425" y="-25">pauseRoad!</label>
+			<label kind="assignment" x="-544" y="-68">roadStart := false</label>
+		</transition>
+		<transition id="id6">
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-144" y="59">pause?</label>
+		</transition>
+		<transition id="id7">
+			<source ref="id3"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="0" y="29">startRoad!</label>
+			<label kind="assignment" x="0" y="46">roadStart := true</label>
+		</transition>
+		<transition id="id8">
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="0" y="-63">start?</label>
+		</transition>
+		<transition id="id9">
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-280" y="-119">stop?</label>
+		</transition>
+	</template>
+	<template>
+		<name x="5" y="5">CONTROLLER</name>
+		<parameter>broadcast chan &amp;ns_start, broadcast chan &amp;pedOnEW, broadcast chan &amp;ns_pause, broadcast chan &amp;ns_stop, broadcast chan &amp;ew_start, broadcast chan &amp;pedOnNS, broadcast chan &amp;ew_pause, broadcast chan &amp;ew_stop, broadcast chan &amp;chanEmerOnNS, broadcast chan &amp;chanEmerOnEW </parameter>
+		<declaration>// Place local declarations here.
+clock red_clock, green_clock, temp_unnamed, x;
+
+
+bool turn = 0; 
+</declaration>
+		<location id="id10" x="-59" y="-153">
+			<name x="-85" y="-187">AllRed</name>
+			<label kind="invariant" x="-119" y="-204">red_clock &lt;= 1</label>
+		</location>
+		<location id="id11" x="-663" y="-391">
+			<name x="-689" y="-442">ns_green</name>
+			<label kind="invariant" x="-723" y="-425">green_clock&lt;=60</label>
+		</location>
+		<location id="id12" x="-663" y="102">
+			<name x="-697" y="111">ns_yellow</name>
+		</location>
+		<location id="id13" x="587" y="-458">
+			<name x="553" y="-509">ew_green</name>
+			<label kind="invariant" x="527" y="-492">green_clock&lt;=60</label>
+		</location>
+		<location id="id14" x="-1419" y="-162">
+			<name x="-1572" y="-171">ns_green_request</name>
+			<label kind="invariant" x="-1521" y="-145">green_clock &lt;= 15</label>
+		</location>
+		<location id="id15" x="586" y="85">
+			<name x="552" y="102">ew_yellow</name>
+		</location>
+		<location id="id16" x="1564" y="-42">
+			<name x="1554" y="-76">ew_green_request</name>
+			<label kind="invariant" x="1581" y="-59">green_clock &lt;= 15</label>
+		</location>
+		<location id="id17" x="-1223" y="-238">
+			<label kind="invariant" x="-1308" y="-264">temp_unnamed &lt;= 0</label>
+		</location>
+		<location id="id18" x="1232" y="-255">
+			<label kind="invariant" x="1181" y="-289">temp_unnamed &lt;= 0</label>
+		</location>
+		<location id="id19" x="-187" y="204">
+			<committed/>
+		</location>
+		<location id="id20" x="42" y="204">
+			<committed/>
+		</location>
+		<location id="id21" x="-969" y="-76">
+			<label kind="invariant" x="-977" y="-59">x &lt;= 0</label>
+		</location>
+		<location id="id22" x="-1487" y="459">
+			<label kind="invariant" x="-1497" y="476">x &lt;= 0</label>
+		</location>
+		<location id="id23" x="1437" y="468">
+			<label kind="invariant" x="1427" y="485">x &lt;= 0</label>
+		</location>
+		<location id="id24" x="909" y="-102">
+			<label kind="invariant" x="899" y="-85">x &lt;= 0</label>
+		</location>
+		<location id="id25" x="331" y="-127">
+			<committed/>
+		</location>
+		<location id="id26" x="-374" y="-119">
+			<committed/>
+		</location>
+		<init ref="id10"/>
+		<transition id="id27">
+			<source ref="id26"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-493" y="0">ns_pause!</label>
+			<nail x="-416" y="0"/>
+		</transition>
+		<transition id="id28">
+			<source ref="id11"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-501" y="-280">chanEmerOnEW?</label>
+			<nail x="-425" y="-255"/>
+		</transition>
+		<transition id="id29">
+			<source ref="id25"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="348" y="-8">ew_pause!</label>
+			<nail x="382" y="17"/>
+		</transition>
+		<transition id="id30">
+			<source ref="id13"/>
+			<target ref="id25"/>
+			<label kind="synchronisation" x="365" y="-331">chanEmerOnNS?</label>
+			<nail x="365" y="-263"/>
+		</transition>
+		<transition id="id31">
+			<source ref="id24"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="739" y="-34">ew_pause!</label>
+		</transition>
+		<transition id="id32">
+			<source ref="id18"/>
+			<target ref="id24"/>
+			<label kind="synchronisation" x="1020" y="-195">chanEmerOnNS?</label>
+			<label kind="assignment" x="1020" y="-170">x := 0</label>
+		</transition>
+		<transition id="id33">
+			<source ref="id23"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="731" y="383">ew_pause!</label>
+			<nail x="833" y="467"/>
+		</transition>
+		<transition id="id34">
+			<source ref="id16"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="1454" y="255">chanEmerOnNS?</label>
+			<label kind="assignment" x="1454" y="281">x := 0</label>
+		</transition>
+		<transition id="id35">
+			<source ref="id22"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-986" y="357">ns_pause!</label>
+			<nail x="-1045" y="459"/>
+		</transition>
+		<transition id="id36">
+			<source ref="id14"/>
+			<target ref="id22"/>
+			<label kind="synchronisation" x="-1521" y="331">chanEmerOnEW?</label>
+			<label kind="assignment" x="-1496" y="306">x := 0</label>
+		</transition>
+		<transition id="id37">
+			<source ref="id21"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-918" y="-25">ns_pause!</label>
+		</transition>
+		<transition id="id38">
+			<source ref="id17"/>
+			<target ref="id21"/>
+			<label kind="synchronisation" x="-1139" y="-161">chanEmerOnEW?</label>
+			<label kind="assignment" x="-1139" y="-144">x := 0</label>
+		</transition>
+		<transition id="id39">
+			<source ref="id13"/>
+			<target ref="id13"/>
+			<label kind="guard" x="410" y="-564">green_clock &gt;= 60</label>
+			<label kind="assignment" x="520" y="-619">green_clock := 0</label>
+			<nail x="392" y="-602"/>
+			<nail x="681" y="-602"/>
+		</transition>
+		<transition id="id40">
+			<source ref="id18"/>
+			<target ref="id13"/>
+			<label kind="synchronisation" x="833" y="-586">chanEmerOnEW?</label>
+			<nail x="834" y="-611"/>
+		</transition>
+		<transition id="id41">
+			<source ref="id16"/>
+			<target ref="id13"/>
+			<label kind="synchronisation" x="1505" y="-407">chanEmerOnEW?</label>
+			<nail x="1564" y="-544"/>
+		</transition>
+		<transition id="id42">
+			<source ref="id11"/>
+			<target ref="id11"/>
+			<label kind="guard" x="-645" y="-514">green_clock &gt;= 60</label>
+			<label kind="assignment" x="-501" y="-587">green_clock := 0</label>
+			<nail x="-374" y="-570"/>
+			<nail x="-603" y="-570"/>
+		</transition>
+		<transition id="id43">
+			<source ref="id17"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-1087" y="-544">chanEmerOnNS?</label>
+			<nail x="-1011" y="-561"/>
+		</transition>
+		<transition id="id44">
+			<source ref="id14"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-1478" y="-468">chanEmerOnNS?</label>
+			<nail x="-1419" y="-553"/>
+		</transition>
+		<transition id="id45">
+			<source ref="id20"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-34" y="-42">ew_stop!</label>
+			<label kind="assignment" x="-25" y="-8">red_clock := 0, turn := 0</label>
+		</transition>
+		<transition id="id46">
+			<source ref="id19"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-212" y="-33">ns_stop!</label>
+			<label kind="assignment" x="-297" y="-8">red_clock := 0, turn := 1</label>
+		</transition>
+		<transition id="id47">
+			<source ref="id15"/>
+			<target ref="id20"/>
+			<label kind="guard" x="59" y="144">pedsInIntersection == 0 &amp;&amp; carsInIntersection == 0</label>
+		</transition>
+		<transition id="id48">
+			<source ref="id12"/>
+			<target ref="id19"/>
+			<label kind="guard" x="-620" y="162">pedsInIntersection == 0 &amp;&amp; carsInIntersection == 0</label>
+		</transition>
+		<transition id="id49">
+			<source ref="id18"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="978" y="26">ew_pause!</label>
+			<nail x="1232" y="-8"/>
+		</transition>
+		<transition id="id50">
+			<source ref="id13"/>
+			<target ref="id18"/>
+			<label kind="guard" x="671" y="-357">green_clock &gt; 15 &amp;&amp; emergencyOnEW_bool == false</label>
+			<label kind="synchronisation" x="722" y="-382">pedOnNS?</label>
+			<label kind="assignment" x="765" y="-323">temp_unnamed := 0</label>
+			<nail x="833" y="-331"/>
+		</transition>
+		<transition id="id51">
+			<source ref="id17"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-1138" y="35">ns_pause!</label>
+			<nail x="-1223" y="9"/>
+		</transition>
+		<transition id="id52">
+			<source ref="id11"/>
+			<target ref="id17"/>
+			<label kind="guard" x="-1113" y="-341">green_clock &gt; 15 &amp;&amp; emergencyOnNS_bool == false</label>
+			<label kind="synchronisation" x="-1011" y="-315">pedOnEW?</label>
+			<label kind="assignment" x="-1105" y="-298">temp_unnamed := 0</label>
+			<nail x="-1011" y="-298"/>
+		</transition>
+		<transition id="id53">
+			<source ref="id16"/>
+			<target ref="id15"/>
+			<label kind="guard" x="995" y="145">green_clock &gt;= 15 &amp;&amp; emergencyOnEW_bool == false</label>
+			<label kind="synchronisation" x="1368" y="162">ew_pause!</label>
+			<nail x="1377" y="153"/>
+		</transition>
+		<transition id="id54">
+			<source ref="id13"/>
+			<target ref="id16"/>
+			<label kind="guard" x="1164" y="-340">green_clock &lt;= 15 &amp;&amp; emergencyOnEW_bool == false</label>
+			<label kind="synchronisation" x="1385" y="-314">pedOnNS?</label>
+			<nail x="1470" y="-288"/>
+		</transition>
+		<transition id="id55">
+			<source ref="id13"/>
+			<target ref="id15"/>
+			<label kind="guard" x="435" y="-271">green_clock &gt;= 60 &amp;&amp; emergencyOnEW_bool == false</label>
+			<label kind="synchronisation" x="552" y="-76">ew_pause!</label>
+		</transition>
+		<transition id="id56">
+			<source ref="id10"/>
+			<target ref="id13"/>
+			<label kind="guard" x="59" y="-280">(red_clock&gt;=1) &amp;&amp; (turn == 1)</label>
+			<label kind="synchronisation" x="118" y="-246">ew_start!</label>
+			<label kind="assignment" x="93" y="-263">green_clock := 0</label>
+			<nail x="153" y="-255"/>
+		</transition>
+		<transition id="id57">
+			<source ref="id14"/>
+			<target ref="id12"/>
+			<label kind="guard" x="-1453" y="162">green_clock&gt;=15 &amp;&amp; emergencyOnNS_bool == false</label>
+			<label kind="synchronisation" x="-1410" y="179">ns_pause!</label>
+			<nail x="-1308" y="187"/>
+		</transition>
+		<transition id="id58">
+			<source ref="id11"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-1385" y="-391">green_clock &lt;= 15 &amp;&amp; emergencyOnNS_bool == false</label>
+			<label kind="synchronisation" x="-1266" y="-408">pedOnEW?</label>
+			<nail x="-1309" y="-391"/>
+		</transition>
+		<transition id="id59">
+			<source ref="id11"/>
+			<target ref="id12"/>
+			<label kind="guard" x="-909" y="-204">green_clock &gt;= 60 &amp;&amp; emergencyOnNS_bool == false</label>
+			<label kind="synchronisation" x="-697" y="-187">ns_pause!</label>
+		</transition>
+		<transition id="id60">
+			<source ref="id10"/>
+			<target ref="id11"/>
+			<label kind="guard" x="-408" y="-357">(red_clock&gt;=1) &amp;&amp; (turn==0)</label>
+			<label kind="synchronisation" x="-399" y="-375">ns_start!</label>
+			<label kind="assignment" x="-331" y="-323">green_clock := 0</label>
+			<nail x="-323" y="-393"/>
+		</transition>
+	</template>
+	<template>
+		<name>VEHICLE_GENERATOR</name>
+		<parameter>int &amp;queue</parameter>
+		<declaration>clock x;
+</declaration>
+		<location id="id61" x="195" y="172">
+			<name x="178" y="121">IDLE</name>
+			<label kind="invariant" x="185" y="189">x &lt;= 20</label>
+		</location>
+		<init ref="id61"/>
+		<transition id="id62">
+			<source ref="id61"/>
+			<target ref="id61"/>
+			<label kind="guard" x="102" y="59">x&gt;=10</label>
+			<label kind="assignment" x="35" y="87">x := 0, queue++</label>
+			<nail x="195" y="-7"/>
+			<nail x="17" y="170"/>
+		</transition>
+	</template>
+	<template>
+		<name x="5" y="5">VEHICLE_CROSSING</name>
+		<parameter>int &amp;q,int &amp;carsInIntersection , broadcast chan &amp;start , broadcast chan &amp;pause</parameter>
+		<declaration>// Place local declarations here.
+
+clock x;
+clock y;</declaration>
+		<location id="id63" x="-221" y="42">
+			<name x="-306" y="34">Red_Idle</name>
+		</location>
+		<location id="id64" x="204" y="-17">
+			<name x="194" y="-51">Green_Idle</name>
+		</location>
+		<location id="id65" x="391" y="195">
+			<name x="381" y="161">Crossing</name>
+			<label kind="invariant" x="381" y="212">x&lt;=3</label>
+		</location>
+		<location id="id66" x="569" y="-68">
+			<name x="544" y="-51">Crossed</name>
+			<committed/>
+		</location>
+		<location id="id67" x="-195" y="382">
+			<name x="-238" y="399">Finishing</name>
+			<label kind="invariant" x="-178" y="382">x&lt;=3</label>
+		</location>
+		<init ref="id63"/>
+		<transition id="id68">
+			<source ref="id64"/>
+			<target ref="id63"/>
+			<label kind="synchronisation" x="-51" y="-110">pause?</label>
+			<nail x="-42" y="-136"/>
+		</transition>
+		<transition id="id69">
+			<source ref="id65"/>
+			<target ref="id67"/>
+			<label kind="synchronisation" x="42" y="263">pause?</label>
+		</transition>
+		<transition id="id70">
+			<source ref="id67"/>
+			<target ref="id63"/>
+			<label kind="guard" x="-272" y="170">x&gt;=3</label>
+			<label kind="assignment" x="-348" y="212">carsInIntersection--</label>
+		</transition>
+		<transition id="id71">
+			<source ref="id66"/>
+			<target ref="id64"/>
+		</transition>
+		<transition id="id72">
+			<source ref="id65"/>
+			<target ref="id66"/>
+			<label kind="guard" x="527" y="42">x&gt;=3</label>
+			<label kind="assignment" x="468" y="76">carsInIntersection--</label>
+		</transition>
+		<transition id="id73">
+			<source ref="id64"/>
+			<target ref="id65"/>
+			<label kind="guard" x="246" y="119">q&gt;0</label>
+			<label kind="assignment" x="229" y="51">q--,
+carsInIntersection++,
+x := 0</label>
+		</transition>
+		<transition id="id74">
+			<source ref="id63"/>
+			<target ref="id64"/>
+			<label kind="synchronisation" x="-85" y="-17">start?</label>
+		</transition>
+	</template>
+	<template>
+		<name>PED_GENERATOR</name>
+		<parameter>int &amp;queue, broadcast chan &amp;pedArrived</parameter>
+		<declaration>clock x;
+</declaration>
+		<location id="id75" x="195" y="172">
+			<name x="178" y="121">IDLE</name>
+			<label kind="invariant" x="185" y="189">x &lt;= 20</label>
+		</location>
+		<init ref="id75"/>
+		<transition id="id76">
+			<source ref="id75"/>
+			<target ref="id75"/>
+			<label kind="guard" x="-17" y="25">x &gt;= 10</label>
+			<label kind="synchronisation" x="68" y="68">pedArrived!</label>
+			<label kind="assignment" x="-25" y="93">x := 0, queue++</label>
+			<nail x="195" y="-7"/>
+			<nail x="8" y="170"/>
+		</transition>
+	</template>
+	<template>
+		<name>PED_CROSSING</name>
+		<parameter>int &amp;queue, int &amp;pedsOnRoad, broadcast chan &amp;start, broadcast chan &amp;pause</parameter>
+		<declaration>clock x;</declaration>
+		<location id="id77" x="-357" y="-25">
+			<name x="-450" y="-34">Red_Idle</name>
+		</location>
+		<location id="id78" x="34" y="-153">
+			<name x="24" y="-187">Green_Idle</name>
+		</location>
+		<location id="id79" x="212" y="85">
+			<name x="202" y="51">Walking</name>
+			<label kind="invariant" x="202" y="102">x&lt;=3</label>
+		</location>
+		<location id="id80" x="408" y="-195">
+			<name x="398" y="-229">Crossed</name>
+			<committed/>
+		</location>
+		<location id="id81" x="-153" y="195">
+			<name x="-195" y="221">Finishing</name>
+			<label kind="invariant" x="-161" y="153">x&lt;=3</label>
+		</location>
+		<init ref="id77"/>
+		<transition id="id82">
+			<source ref="id81"/>
+			<target ref="id77"/>
+			<label kind="guard" x="-306" y="119">x&gt;=3</label>
+			<label kind="assignment" x="-382" y="68">pedsOnRoad--</label>
+		</transition>
+		<transition id="id83">
+			<source ref="id79"/>
+			<target ref="id81"/>
+			<label kind="synchronisation" x="0" y="102">pause?</label>
+		</transition>
+		<transition id="id84">
+			<source ref="id80"/>
+			<target ref="id78"/>
+		</transition>
+		<transition id="id85">
+			<source ref="id79"/>
+			<target ref="id80"/>
+			<label kind="guard" x="348" y="-76">x&gt;=3</label>
+			<label kind="assignment" x="314" y="-51">pedsOnRoad--</label>
+		</transition>
+		<transition id="id86">
+			<source ref="id78"/>
+			<target ref="id77"/>
+			<label kind="synchronisation" x="-272" y="-263">pause?</label>
+			<nail x="-195" y="-289"/>
+		</transition>
+		<transition id="id87">
+			<source ref="id78"/>
+			<target ref="id79"/>
+			<label kind="guard" x="42" y="-42">queue&gt;0</label>
+			<label kind="assignment" x="136" y="-85">queue--,
+pedsOnRoad++,
+x:=0</label>
+		</transition>
+		<transition id="id88">
+			<source ref="id77"/>
+			<target ref="id78"/>
+			<label kind="synchronisation" x="-212" y="-119">start?</label>
+		</transition>
+	</template>
+	<template>
+		<name>EMERGENCY_VEHICLE_GENERATOR</name>
+		<parameter>broadcast chan &amp;emergencyVehicleArrived, bool &amp;emerRoad</parameter>
+		<declaration>clock x;
+</declaration>
+		<location id="id89" x="0" y="0">
+			<name x="25" y="-8">idle</name>
+			<label kind="invariant" x="-10" y="17">x &lt;= 200</label>
+		</location>
+		<init ref="id89"/>
+		<transition id="id90">
+			<source ref="id89"/>
+			<target ref="id89"/>
+			<label kind="guard" x="-374" y="-110">x&gt;=100</label>
+			<label kind="synchronisation" x="-459" y="-127">emergencyVehicleArrived!</label>
+			<label kind="assignment" x="-484" y="-85">x := 0, emerRoad := true</label>
+			<nail x="-340" y="0"/>
+			<nail x="-340" y="0"/>
+			<nail x="-340" y="-221"/>
+		</transition>
+	</template>
+	<template>
+		<name>EMERGENCY_CROSSING</name>
+		<parameter>bool &amp;emerOnRoad, broadcast chan &amp;start, broadcast chan &amp;pause</parameter>
+		<declaration>clock x;
+clock y;</declaration>
+		<location id="id91" x="-357" y="-25">
+			<name x="-450" y="-34">Red_Idle</name>
+		</location>
+		<location id="id92" x="34" y="-153">
+			<name x="24" y="-187">Green_Idle</name>
+			<label kind="invariant" x="24" y="-136">y &lt;= 0</label>
+		</location>
+		<location id="id93" x="212" y="85">
+			<name x="202" y="51">Crossing</name>
+			<label kind="invariant" x="202" y="102">x&lt;=3</label>
+		</location>
+		<init ref="id91"/>
+		<transition id="id94">
+			<source ref="id93"/>
+			<target ref="id91"/>
+			<label kind="assignment" x="-289" y="25">emerOnRoad := false, carsInIntersection--</label>
+		</transition>
+		<transition id="id95">
+			<source ref="id92"/>
+			<target ref="id93"/>
+			<label kind="assignment" x="-17" y="-93">x:=0, carsInIntersection++</label>
+		</transition>
+		<transition id="id96">
+			<source ref="id91"/>
+			<target ref="id92"/>
+			<label kind="synchronisation" x="-212" y="-119">start?</label>
+			<label kind="assignment" x="-339" y="-89">y := 0</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+
+NS_Vehicle_Pedestrian_Light = TRAFFIC_AND_PEDESTRIAN_LIGHT(NS_Start, NS_startRoad, NS_Pause, NS_pauseRoad, NS_Stop, NS_RoadStarted);   
+EW_Vehicle_Pedestrian_Light = TRAFFIC_AND_PEDESTRIAN_LIGHT(EW_Start, EW_startRoad, EW_Pause, EW_pauseRoad, EW_Stop, EW_RoadStarted);
+
+Controller = CONTROLLER(NS_Start, pedOnEW, NS_Pause, NS_Stop, EW_Start, pedOnNS, EW_Pause, EW_Stop, emergencyOnNS, emergencyOnEW);
+
+NS_Generator = VEHICLE_GENERATOR(NS_queue);
+EW_Generator = VEHICLE_GENERATOR(EW_queue);
+
+NS_VehicleCrossing = VEHICLE_CROSSING(NS_queue, carsInIntersection, NS_startRoad, NS_pauseRoad);
+EW_VehicleCrossing = VEHICLE_CROSSING(EW_queue, carsInIntersection, EW_startRoad, EW_pauseRoad);
+
+NS_PedGenerator = PED_GENERATOR(NS_pedQueue, pedOnNS);
+EW_PedGenerator = PED_GENERATOR(EW_pedQueue, pedOnEW);
+
+NS_PedCrossing = PED_CROSSING(NS_pedQueue, pedsInIntersection, NS_startRoad, NS_pauseRoad);
+EW_PedCrossing = PED_CROSSING(EW_pedQueue, pedsInIntersection, EW_startRoad, EW_pauseRoad);
+
+NS_EmergencyGenerator = EMERGENCY_VEHICLE_GENERATOR(emergencyOnNS, emergencyOnNS_bool);
+EW_EmergencyGenerator = EMERGENCY_VEHICLE_GENERATOR(emergencyOnEW, emergencyOnEW_bool);
+
+NS_EmerCrossing = EMERGENCY_CROSSING(emergencyOnNS_bool, NS_startRoad, NS_pauseRoad);
+EW_EmerCrossing = EMERGENCY_CROSSING(emergencyOnEW_bool, EW_startRoad, EW_pauseRoad);
+
+// List one or more processes to be composed into a system.
+system NS_Vehicle_Pedestrian_Light, EW_Vehicle_Pedestrian_Light, Controller, NS_Generator, EW_Generator, NS_VehicleCrossing, EW_VehicleCrossing, NS_PedGenerator, EW_PedGenerator, NS_PedCrossing, EW_PedCrossing, NS_EmergencyGenerator, EW_EmergencyGenerator, NS_EmerCrossing, EW_EmerCrossing;
+
+//system NS_Light, EW_Light, Controller, NS_Generator, EW_Generator, NS_VehicleCrossing, EW_VehicleCrossing, NS_PedCrossing, EW_PedCrossing;
+
+
+
+</system>
+	<queries>
+		<option key="--statespace-consumption" value="3"/>
+		<option key="--diagnostic" value="-1"/>
+		<query>
+			<formula>A&lt;&gt; (NS_queue == 0 and EW_queue == 0 and carsInIntersection == 0)
+//All vehicles are eventually allowed to cross. </formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2025-11-23 21:13:22 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (NS_pedQueue == 0 and EW_pedQueue == 0 and pedsInIntersection == 0) //All pedestrians are eventually allowed to cross.
+</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2025-11-23 21:13:22 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (NS_PedCrossing.Walking and EW_Light.green) //For all paths, eventually when Pedestrian is walking on the NS road, the EW road light is green. THIS SHOULD NOT BE SATISFIED.</formula>
+			<comment/>
+			<result outcome="failure" type="quality" timestamp="2025-11-23 21:17:37 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (EW_PedCrossing.Walking and NS_Light.green) //For all paths, eventually when Pedestrian is walking on the EW road, the NS road light is green. THIS SHOULD NOT BE SATISFIED.</formula>
+			<comment/>
+			<result outcome="failure" type="quality" timestamp="2025-11-23 21:17:39 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; ((Controller.ns_yellow or Controller.ew_yellow) and Controller.green_clock &lt; 15) //For all paths, eventually when the controller has any light on yellow, the green clock is less than 15 time units. THIS SHOULD NOT BE SATISFIED.</formula>
+			<comment/>
+			<result outcome="failure" type="quality" timestamp="2025-11-23 21:17:41 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; not ((Controller.ns_yellow or Controller.ew_yellow) and Controller.green_clock &lt; 15) //There exists a path when eventually it isnt true that some light is yellow, while the green phase has lasted less than 15 time units.</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2025-11-23 21:13:26 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (emergencyOnNS_bool imply (NS_Light.green &amp;&amp; Controller.green_clock &lt;= 20))
+</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2025-11-23 21:13:26 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; (emergencyOnEW_bool imply (EW_Light.green &amp;&amp; Controller.green_clock &lt;= 20))</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2025-11-23 21:13:26 +0530">
+				<option key="--statespace-consumption" value="3"/>
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>A[] not (NS_PedCrossing.Walking and EW_Vehicle_Pedestrian_Light.green)
+
+</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>A[] not (NS_Vehicle_Pedestrian_Light.green and EW_Vehicle_Pedestrian_Light.green)</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>A[] not (NS_PedCrossing.Walking and EW_Vehicle_Pedestrian_Light.green)</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>A[] not (EW_PedCrossing.Walking and NS_Vehicle_Pedestrian_Light.green)</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>A[] not ((Controller.ns_yellow or Controller.ew_yellow) and Controller.green_clock &lt; 15)
+</formula>
+			<comment/>
+		</query>
+	</queries>
+</nta>
