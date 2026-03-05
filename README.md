@@ -3,6 +3,6 @@ Formal verification of a smart intersection system using UPPAAL timed automata. 
 
 ## Report
 
-The full project report can be found here:
+The full project description can be found here:
 
-[📄 View Project Report](UPPAAL--Smart-Intersection/Project%20Desc.pdf)
+[📄 View Project Description](Project%20Desc.pdf)
